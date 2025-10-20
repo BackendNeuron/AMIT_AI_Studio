@@ -8,7 +8,7 @@ import uuid
 import asyncio
 
 # =========================
-# 🏗 FastAPI App Setup
+# FastAPI App Setup
 # =========================
 app = FastAPI(title="AMIT AI Studio")
 
@@ -16,7 +16,7 @@ app = FastAPI(title="AMIT AI Studio")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # =========================
-# 🏠 Home Page Route
+# Home Page Route
 # =========================
 @app.get("/")
 async def home():
@@ -27,7 +27,7 @@ async def home():
 
 
 # =========================
-# 🖼 TXT2IMG Endpoint
+# TXT2IMG Endpoint
 # =========================
 from txt2img_service import generate_txt2img  # Make sure this import exists
 
@@ -51,7 +51,7 @@ async def txt2img_endpoint(style: str = Form(None), custom_prompt: str = Form(No
 
 
 # =========================
-# 🖼 IMG2IMG Endpoint
+# IMG2IMG Endpoint
 # =========================
 from img2img_service import generate_img2img
 
@@ -79,7 +79,7 @@ async def img2img_api(file: UploadFile = File(...), prompt: str = Form(...)):
 
 
 # =========================
-# 🎭 Shakespeare Text Styler Endpoints
+# Shakespeare Text Styler Endpoints
 # =========================
 from shakespeare_rag import ShakespeareStyler
 
@@ -109,7 +109,7 @@ async def textstyler_stream(user_text: str):
 
 
 # =========================
-# ✅ Optional Health Check
+# Optional Health Check
 # =========================
 @app.get("/health")
 async def health():
