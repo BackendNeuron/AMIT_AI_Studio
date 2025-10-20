@@ -1,10 +1,19 @@
-# Ignore virtual environment
+# Ignore virtual environments
 rag_env/
+sd_env/
+
+# Python cache and compiled files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Environment files
 .env
 .env.*
+
+# Database files
 *.sqlite3
-.DS_Store
+
+# Ignore RAG vector database folder
+vector_index/
