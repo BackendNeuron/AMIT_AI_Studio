@@ -17,3 +17,6 @@ __pycache__/
 
 # Ignore RAG vector database folder
 vector_index/
+
+# Ignore specific text file
+shakespeare.txt
