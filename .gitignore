@@ -1,22 +1,15 @@
-# Ignore virtual environments
-rag_env/
-sd_env/
+# Ignore everything
+*
 
-# Python cache and compiled files
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Exclude the specific .py files (track these)
+!app.py
+!img2img_service.py
+!shakespeare_rag.py
+!txt2img_service.py
 
-# Environment files
-.env
-.env.*
+# Exclude the folder 'dstatic' and everything inside it
+!dstatic/
+!dstatic/**
 
-# Database files
-*.sqlite3
-
-# Ignore RAG vector database folder
-vector_index/
-
-# Ignore specific text file
-shakespeare.txt
+# Optional: ignore .gitignore itself (but usually tracked)
+!.gitignore
