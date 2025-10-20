@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <title>Text → Image — AMIT AI Studio</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-6">
+
+  <main class="w-full max-w-3xl">
+    <div class="bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md p-6 rounded-2xl border border-gray-700 shadow-xl">
+      <header class="mb-4">
+        <h1 class="text-2xl font-bold text-center">🎨 Text → Image Generator</h1>
+        <p class="text-sm text-gray-300 text-center mt-1">Choose a style, click helpful tags, write a prompt and generate.</p>
+      </header>
+
+      <form id="txt2imgForm" class="space-y-4">
+        <!-- Style selector -->
+        <div>
+          <label for="styleSelect" class="text-sm font-medium mb-1 block">Style (optional)</label>
+          <div class="flex gap-3">
+            <select id="styleSelect" name="style" class="flex-1 p-3 bg-gray-800 border border-gray-700 rounded">
+              <option value="">— Custom (use prompt) —</option>
+              <option value="photo">📸 Photo Realistic</option>
+              <option value="art">🎨 Fantasy Art</option>
+              <option value="anime">🎌 Anime</option>
+              <option value="cyberpunk">🌌 Cyberpunk</option>
+              <option value="cinematic">🎬 Cinematic</option>
+            </select>
+
+            <button id="clearStyle" type="button" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">Clear</button>
+          </div>
+          <p id="styleHint" class="mt-2 text-xs text-gray-400">Tip: choose a style or leave empty for a custom enhanced prompt.</p>
+        </div>
+
+        <!-- Prompt enhancer tags -->
+        <div>
+          <label class="text-sm font-medium mb-2 block">Quick tags</label>
+          <div id="tagBar" class="flex flex-wrap gap-2">
+            <!-- clickable chips -->
+            <button type="button" data-tag="cinematic" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">Cinematic</button>
+            <button type="button" data-tag="8k" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">8K</button>
+            <button type="button" data-tag="soft lighting" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">Soft Lighting</button>
+            <button type="button" data-tag="high detail" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">High Detail</button>
+            <button type="button" data-tag="neon glow" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">Neon Glow</button>
+            <button type="button" data-tag="masterpiece" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">Masterpiece</button>
+            <button type="button" data-tag="concept art" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">Concept Art</button>
+            <button type="button" data-tag="dramatic lighting" class="tag-chip px-3 py-1 rounded bg-gray-700 hover:bg-blue-600 transition">Dramatic Lighting</button>
+          </div>
+          <p class="mt-2 text-xs text-gray-400">Click a tag to append it to your prompt.</p>
+        </div>
+
+        <!-- Prompt field -->
+        <div>
+          <label for="prompt" class="text-sm font-medium mb-1 block">Prompt</label>
+          <textarea id="prompt" name="custom_prompt" required
+            placeholder="e.g. a futuristic city street at night with flying cars"
+            class="w-full p-3 bg-gray-800 border border-gray-700 rounded h-32 resize-y"></textarea>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex gap-3 items-center">
+          <button id="generateBtn" type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 rounded font-semibold disabled:opacity-60">
+            Generate Image
+          </button>
+          <button id="resetBtn" type="button" class="px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded">Reset</button>
+        </div>
+      </form>
+
+      <!-- Output area -->
+      <section id="resultArea" class="mt-6 hidden">
+        <h2 class="text-lg font-semibold mb-2">Result</h2>
+
+        <div class="relative bg-gray-800 p-4 rounded-lg border border-gray-700 flex flex-col items-center">
+          <img id="generatedImage" alt="Generated" class="max-w-full rounded-lg opacity-0 transition-opacity duration-300" />
+          <div class="mt-4 flex gap-3">
+            <a id="downloadBtn" class="hidden px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-sm" download>Download</a>
+            <button id="regenerateBtn" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-sm">Regenerate</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Spinner overlay -->
+  <div id="spinnerOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 hidden">
+    <div class="flex flex-col items-center gap-3">
+      <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16"></div>
+      <div class="text-white">Generating image… this can take a few seconds</div>
+    </div>
+  </div>
+
+  <style>
+    /* spinner animation */
+    .loader {
+      border-top-color: #3b82f6;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* active tag look */
+    .tag-active { background-color: #2563eb !important; }
+  </style>
+
+  <script>
+    // Elements
+    const form = document.getElementById('txt2imgForm');
+    const styleSelect = document.getElementById('styleSelect');
+    const clearStyleBtn = document.getElementById('clearStyle');
+    const promptEl = document.getElementById('prompt');
+    const generateBtn = document.getElementById('generateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const spinnerOverlay = document.getElementById('spinnerOverlay');
+    const resultArea = document.getElementById('resultArea');
+    const generatedImage = document.getElementById('generatedImage');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const regenerateBtn = document.getElementById('regenerateBtn');
+    const tagChips = document.querySelectorAll('.tag-chip');
+
+    // Append tag to prompt
+    tagChips.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag;
+        const cur = promptEl.value.trim();
+        // Avoid duplicate appends if last token same
+        if (cur.length === 0) {
+          promptEl.value = tag;
+        } else {
+          // Add comma separation if needed
+          promptEl.value = cur.replace(/\s*,\s*$/,"") + ', ' + tag;
+        }
+        // visual active effect
+        btn.classList.add('tag-active');
+        setTimeout(() => btn.classList.remove('tag-active'), 300);
+      });
+    });
+
+    // Clear style
+    clearStyleBtn.addEventListener('click', () => {
+      styleSelect.value = '';
+    });
+
+    // Reset form
+    resetBtn.addEventListener('click', () => {
+      styleSelect.value = '';
+      promptEl.value = '';
+      resultArea.classList.add('hidden');
+      generatedImage.src = '';
+      generatedImage.style.opacity = 0;
+      downloadBtn.classList.add('hidden');
+    });
+
+    // Helper to show/hide spinner and disable
+    function setLoading(on) {
+      spinnerOverlay.classList.toggle('hidden', !on);
+      generateBtn.disabled = on;
+      generateBtn.textContent = on ? 'Generating…' : 'Generate Image';
+    }
+
+    // Perform generate request
+    async function doGenerate() {
+      // validate prompt
+      const prompt = promptEl.value.trim();
+      if (!prompt) {
+        alert('Please enter a prompt.');
+        return;
+      }
+
+      // Prepare form data — send style only if provided
+      const fd = new FormData();
+      const style = styleSelect.value;
+      if (style) fd.append('style', style);
+      fd.append('custom_prompt', prompt);
+
+      try {
+        setLoading(true);
+
+        const res = await fetch('/txt2img', {
+          method: 'POST',
+          body: fd
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || 'Server error');
+        }
+
+        // get image blob and show
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+
+        generatedImage.src = url;
+        // ensure image fades in
+        generatedImage.onload = () => {
+          generatedImage.style.opacity = 1;
+          resultArea.classList.remove('hidden');
+          // enable download
+          downloadBtn.href = url;
+          downloadBtn.download = `amitai_${Date.now()}.png`;
+          downloadBtn.classList.remove('hidden');
+        };
+      } catch (err) {
+        console.error(err);
+        alert('Error generating image: ' + (err.message || err));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Form submit
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      await doGenerate();
+    });
+
+    // Regenerate uses same last values
+    regenerateBtn.addEventListener('click', async () => {
+      await doGenerate();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Download link: it already points to object URL and has download attribute.
+    // Revoke object URL after page unload to free memory
+    window.addEventListener('beforeunload', () => {
+      if (generatedImage.src && generatedImage.src.startsWith('blob:')) {
+        URL.revokeObjectURL(generatedImage.src);
+      }
+    });
+  </script>
+</body>
+</html>

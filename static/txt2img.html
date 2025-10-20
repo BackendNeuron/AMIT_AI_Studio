@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Text to Image</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-6">
+  <div class="w-full max-w-2xl bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-4 text-center">🎨 Text to Image Generator</h1>
+
+    <form id="txt2imgForm" class="space-y-4">
+
+      <!-- Style Dropdown -->
+      <label class="font-semibold">Choose Style</label>
+      <select id="styleSelect" name="style" class="w-full p-3 bg-gray-700 border border-gray-600 rounded">
+        <option value="">None (Custom)</option>
+        <option value="photo">Photo Realistic</option>
+        <option value="anime">Anime Art</option>
+        <option value="art">Fantasy Art</option>
+        <option value="cyberpunk">Cyberpunk Neon</option>
+      </select>
+
+      <!-- Style Chips -->
+      <div class="flex flex-wrap gap-2 mt-2">
+        <span class="style-chip px-3 py-1 bg-gray-700 rounded-lg cursor-pointer hover:bg-blue-600 transition" data-style="photo">📸 Photo</span>
+        <span class="style-chip px-3 py-1 bg-gray-700 rounded-lg cursor-pointer hover:bg-blue-600 transition" data-style="anime">🎌 Anime</span>
+        <span class="style-chip px-3 py-1 bg-gray-700 rounded-lg cursor-pointer hover:bg-blue-600 transition" data-style="art">🎨 Art</span>
+        <span class="style-chip px-3 py-1 bg-gray-700 rounded-lg cursor-pointer hover:bg-blue-600 transition" data-style="cyberpunk">🌌 Cyberpunk</span>
+      </div>
+
+      <!-- Prompt Input -->
+      <textarea name="custom_prompt" placeholder="Enter your prompt (e.g., girl in a futuristic city)" class="w-full p-3 bg-gray-700 border border-gray-600 rounded h-32"></textarea>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded font-semibold">Generate Image</button>
+    </form>
+
+    <div id="outputContainer" class="mt-6 text-center hidden">
+      <h2 class="text-lg mb-2">Generated Image:</h2>
+      <img id="generatedImage" class="mx-auto rounded-lg border border-gray-700 shadow-lg" />
+    </div>
+  </div>
+
+  <script>
+    // Chip Click Logic
+    document.querySelectorAll(".style-chip").forEach(chip => {
+      chip.addEventListener("click", function () {
+        const styleValue = this.getAttribute("data-style");
+        document.getElementById("styleSelect").value = styleValue;
+
+        // Highlight active chip
+        document.querySelectorAll(".style-chip").forEach(c => c.classList.remove("bg-blue-600"));
+        this.classList.add("bg-blue-600");
+      });
+    });
+
+    // Submit Form
+    document.getElementById("txt2imgForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+
+      const response = await fetch("/txt2img", {
+        method: "POST",
+        body: formData
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        document.getElementById("generatedImage").src = url;
+        document.getElementById("outputContainer").classList.remove("hidden");
+      } else {
+        alert("Error generating image");
+      }
+    });
+  </script>
+</body>
+</html>
